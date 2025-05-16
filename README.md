@@ -23,7 +23,7 @@ Void is all about modularity and freedom. Whether you're creating a DeFi protoco
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/void.git
+git clone https://github.com/void-blockchain/void.git
 cd void
 make install
 ```
