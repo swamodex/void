@@ -1,6 +1,8 @@
 package void
 
 import (
+	"time"
+
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
 	appv1alpha1 "cosmossdk.io/api/cosmos/app/v1alpha1"
 	authmodulev1 "cosmossdk.io/api/cosmos/auth/module/v1"
@@ -13,6 +15,7 @@ import (
 	feegrantmodulev1 "cosmossdk.io/api/cosmos/feegrant/module/v1"
 	genutilmodulev1 "cosmossdk.io/api/cosmos/genutil/module/v1"
 	govmodulev1 "cosmossdk.io/api/cosmos/gov/module/v1"
+	groupmodulev1 "cosmossdk.io/api/cosmos/group/module/v1"
 	mintmodulev1 "cosmossdk.io/api/cosmos/mint/module/v1"
 	paramsmodulev1 "cosmossdk.io/api/cosmos/params/module/v1"
 	protocolpoolmodulev1 "cosmossdk.io/api/cosmos/protocolpool/module/v1"
@@ -22,6 +25,7 @@ import (
 	upgrademodulev1 "cosmossdk.io/api/cosmos/upgrade/module/v1"
 	vestingmodulev1 "cosmossdk.io/api/cosmos/vesting/module/v1"
 	feemarketmodulev1 "github.com/skip-mev/feemarket/api/feemarket/feemarket/module/v1"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
@@ -42,6 +46,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/cosmos/cosmos-sdk/x/group"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
@@ -69,6 +74,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/bank"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"      // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/distribution"   // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/group/module"   // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/mint"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/protocolpool"   // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/slashing"       // import for side-effects
@@ -141,6 +147,7 @@ var (
 					govtypes.ModuleName,
 					stakingtypes.ModuleName,
 					feegrant.ModuleName,
+					group.ModuleName,
 					protocolpooltypes.ModuleName,
 					ibcexported.ModuleName,
 					ibctransfertypes.ModuleName,
@@ -178,6 +185,7 @@ var (
 					icatypes.ModuleName,
 					ibcfeetypes.ModuleName,
 					feegrant.ModuleName,
+					group.ModuleName,
 					paramstypes.ModuleName,
 					upgradetypes.ModuleName,
 					vestingtypes.ModuleName,
@@ -206,6 +214,7 @@ var (
 					icatypes.ModuleName,
 					ibcfeetypes.ModuleName,
 					feegrant.ModuleName,
+					group.ModuleName,
 					paramstypes.ModuleName,
 					upgradetypes.ModuleName,
 					vestingtypes.ModuleName,
@@ -279,6 +288,13 @@ var (
 		{
 			Name:   minttypes.ModuleName,
 			Config: appconfig.WrapAny(&mintmodulev1.Module{}),
+		},
+		{
+			Name: group.ModuleName,
+			Config: appconfig.WrapAny(&groupmodulev1.Module{
+				MaxExecutionPeriod: durationpb.New(time.Second * 1209600),
+				MaxMetadataLen:     255,
+			}),
 		},
 		{
 			Name:   feegrant.ModuleName,
