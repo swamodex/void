@@ -296,17 +296,6 @@ func New(
 		_, _ = fmt.Fprintln(os.Stderr, err.Error())
 	}
 
-	// if loadLatest {
-	// 	if err := app.LoadLatestVersion(); err != nil {
-	// 		panic(fmt.Errorf("error loading last version: %w", err))
-	// 	}
-	// 	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
-
-	// 	// Initialize pinned codes in wasmvm as they are not persisted there
-	// 	if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
-	// 		panic(fmt.Sprintf("failed initialize pinned codes %s", err))
-	// 	}
-	// }
 	if err := app.Load(loadLatest); err != nil {
 		panic(err)
 	}
