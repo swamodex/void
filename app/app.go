@@ -1,7 +1,9 @@
 package void
 
 import (
+	"fmt"
 	"io"
+	"os"
 
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/depinject"
@@ -11,6 +13,7 @@ import (
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -24,6 +27,7 @@ import (
 	testdata_pulsar "github.com/cosmos/cosmos-sdk/testutil/testdata/testpb"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
@@ -39,6 +43,7 @@ import (
 	protocolpoolkeeper "github.com/cosmos/cosmos-sdk/x/protocolpool/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	"github.com/cosmos/gogoproto/proto"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
@@ -146,7 +151,7 @@ func New(
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) *VoidApp {
+) (*VoidApp, error) {
 	var (
 		app        = &VoidApp{}
 		appBuilder *runtime.AppBuilder
@@ -278,11 +283,35 @@ func New(
 		return app.App.InitChainer(ctx, req)
 	})
 
+	// At startup, after all modules have been registered, check that all proto
+	// annotations are correct.
+	protoFiles, err := proto.MergedRegistry()
+	if err != nil {
+		panic(err)
+	}
+	err = msgservice.ValidateProtoAnnotations(protoFiles)
+	if err != nil {
+		// Once we switch to using protoreflect-based antehandlers, we might
+		// want to panic here instead of logging a warning.
+		_, _ = fmt.Fprintln(os.Stderr, err.Error())
+	}
+
+	// if loadLatest {
+	// 	if err := app.LoadLatestVersion(); err != nil {
+	// 		panic(fmt.Errorf("error loading last version: %w", err))
+	// 	}
+	// 	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+
+	// 	// Initialize pinned codes in wasmvm as they are not persisted there
+	// 	if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
+	// 		panic(fmt.Sprintf("failed initialize pinned codes %s", err))
+	// 	}
+	// }
 	if err := app.Load(loadLatest); err != nil {
 		panic(err)
 	}
 
-	return app
+	return app, app.WasmKeeper.InitializePinnedCodes(app.NewUncachedContext(true, tmproto.Header{}))
 }
 
 // LegacyAmino returns VoidApp's amino codec.

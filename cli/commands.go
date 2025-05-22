@@ -196,11 +196,14 @@ func newApp(
 	appOpts servertypes.AppOptions,
 ) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
-	app := void.New(
+	app, err := void.New(
 		logger, db, traceStore, true,
 		appOpts,
 		baseappOptions...,
 	)
+	if err != nil {
+		panic(err)
+	}
 
 	return app
 }
@@ -225,15 +228,24 @@ func appExport(
 	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
 	appOpts = viperAppOpts
 
-	var voidApp *void.VoidApp
+	var (
+		voidApp *void.VoidApp
+		err     error
+	)
 	if height != -1 {
-		voidApp = void.New(logger, db, traceStore, false, appOpts)
+		voidApp, err = void.New(logger, db, traceStore, false, appOpts)
+		if err != nil {
+			panic(err)
+		}
 
 		if err := voidApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		voidApp = void.New(logger, db, traceStore, true, appOpts)
+		voidApp, err = void.New(logger, db, traceStore, true, appOpts)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return voidApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)

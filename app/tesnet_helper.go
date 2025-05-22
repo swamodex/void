@@ -43,7 +43,10 @@ func setup(withGenesis bool, invCheckPeriod uint) (*VoidApp, GenesisState) {
 	appOptions := make(simtestutil.AppOptionsMap, 0)
 	appOptions[flags.FlagHome] = DefaultNodeHome
 
-	app := New(log.NewNopLogger(), db, nil, true, appOptions)
+	app, err := New(log.NewNopLogger(), db, nil, true, appOptions)
+	if err != nil {
+		panic(err)
+	}
 
 	if withGenesis {
 		return app, app.DefaultGenesis()
@@ -70,7 +73,10 @@ func NewWithCustomOptions(t *testing.T, isCheckTx bool, options SetupOptions) *V
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(100000000000000))),
 	}
 
-	app := New(options.Logger, options.DB, nil, true, options.AppOpts)
+	app, err := New(options.Logger, options.DB, nil, true, options.AppOpts)
+	if err != nil {
+		panic(err)
+	}
 
 	genesisState := app.DefaultGenesis()
 	genesisState, err = simtestutil.GenesisStateWithValSet(app.AppCodec(), genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
@@ -224,16 +230,22 @@ func NewTestNetworkFixture() network.TestFixture {
 	}
 	defer os.RemoveAll(dir)
 
-	app := New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(dir))
+	app, err := New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(dir))
+	if err != nil {
+		panic(err)
+	}
 
 	appCtr := func(val network.ValidatorI) servertypes.Application {
-		app := New(
+		app, err := New(
 			val.GetCtx().Logger, dbm.NewMemDB(), nil, true,
 			simtestutil.NewAppOptionsWithFlagHome(val.GetCtx().Config.RootDir),
 			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
 			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
 			bam.SetChainID(val.GetCtx().Viper.GetString(flags.FlagChainID)),
 		)
+		if err != nil {
+			panic(err)
+		}
 
 		return app
 	}
