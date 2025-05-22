@@ -44,7 +44,6 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -53,11 +52,9 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
@@ -93,7 +90,6 @@ var (
 		{Account: protocolpooltypes.ModuleName},
 		{Account: protocolpooltypes.ProtocolPoolEscrowAccount},
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
-		{Account: ibcfeetypes.ModuleName},
 		{Account: icatypes.ModuleName},
 		{Account: wasmtypes.ModuleName, Permissions: []string{authtypes.Burner}},
 		{Account: feemarkettypes.ModuleName, Permissions: []string{authtypes.Burner}},
@@ -135,11 +131,10 @@ var (
 					stakingtypes.ModuleName,
 					authz.ModuleName,
 					// ibc modules
-					capabilitytypes.ModuleName,
 					ibcexported.ModuleName,
 					ibctransfertypes.ModuleName,
 					icatypes.ModuleName,
-					ibcfeetypes.ModuleName,
+					// wasm modules
 					wasmtypes.ModuleName,
 				},
 				EndBlockers: []string{
@@ -149,11 +144,11 @@ var (
 					feegrant.ModuleName,
 					group.ModuleName,
 					protocolpooltypes.ModuleName,
+					// ibc modules
 					ibcexported.ModuleName,
 					ibctransfertypes.ModuleName,
-					capabilitytypes.ModuleName,
 					icatypes.ModuleName,
-					ibcfeetypes.ModuleName,
+					// wasm modules
 					wasmtypes.ModuleName,
 				},
 				OverrideStoreKeys: []*runtimev1alpha1.StoreKeyConfig{
@@ -169,7 +164,6 @@ var (
 				// properly initialized with tokens from genesis accounts.
 				// NOTE: The genutils module must also occur after auth so that it can access the params from auth.
 				InitGenesis: []string{
-					capabilitytypes.ModuleName,
 					authtypes.ModuleName,
 					banktypes.ModuleName,
 					distrtypes.ModuleName,
@@ -177,13 +171,9 @@ var (
 					slashingtypes.ModuleName,
 					govtypes.ModuleName,
 					minttypes.ModuleName,
-					ibcexported.ModuleName,
 					genutiltypes.ModuleName,
 					evidencetypes.ModuleName,
 					authz.ModuleName,
-					ibctransfertypes.ModuleName,
-					icatypes.ModuleName,
-					ibcfeetypes.ModuleName,
 					feegrant.ModuleName,
 					group.ModuleName,
 					paramstypes.ModuleName,
@@ -191,13 +181,18 @@ var (
 					vestingtypes.ModuleName,
 					circuittypes.ModuleName,
 					protocolpooltypes.ModuleName,
+					// ibc
+					ibcexported.ModuleName,
+					ibctransfertypes.ModuleName,
+					icatypes.ModuleName,
+					// wasm
 					wasmtypes.ModuleName,
+					// feemarket
 					feemarkettypes.ModuleName,
 				},
 				// When ExportGenesis is not specified, the export genesis module order
 				// is equal to the init genesis order
 				ExportGenesis: []string{
-					capabilitytypes.ModuleName,
 					authtypes.ModuleName,
 					protocolpooltypes.ModuleName, // Must be exported before bank
 					banktypes.ModuleName,
@@ -206,20 +201,22 @@ var (
 					slashingtypes.ModuleName,
 					govtypes.ModuleName,
 					minttypes.ModuleName,
-					ibcexported.ModuleName,
 					genutiltypes.ModuleName,
 					evidencetypes.ModuleName,
 					authz.ModuleName,
-					ibctransfertypes.ModuleName,
-					icatypes.ModuleName,
-					ibcfeetypes.ModuleName,
 					feegrant.ModuleName,
 					group.ModuleName,
 					paramstypes.ModuleName,
 					upgradetypes.ModuleName,
 					vestingtypes.ModuleName,
 					circuittypes.ModuleName,
+					// ibc
+					ibcexported.ModuleName,
+					ibctransfertypes.ModuleName,
+					icatypes.ModuleName,
+					// wasm
 					wasmtypes.ModuleName,
+					// feemarket
 					feemarkettypes.ModuleName,
 				},
 				// Uncomment if you want to set a custom migration order here.
@@ -334,7 +331,6 @@ var (
 			// supply custom module basics
 			map[string]module.AppModuleBasic{
 				genutiltypes.ModuleName:   genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-				govtypes.ModuleName:       gov.NewAppModuleBasic(getGovProposalHandlers()),
 				feemarkettypes.ModuleName: feemarket.AppModuleBasic{},
 			},
 		),

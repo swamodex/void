@@ -14,6 +14,8 @@ import (
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
 
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/keys"
@@ -27,9 +29,6 @@ import (
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-
-	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
 )
 
 // initCometBFTConfig helps to override default CometBFT Config values.
@@ -197,14 +196,12 @@ func newApp(
 	appOpts servertypes.AppOptions,
 ) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
-	app, err := void.New(
+	app := void.New(
 		logger, db, traceStore, true,
 		appOpts,
 		baseappOptions...,
 	)
-	if err != nil {
-		panic(err)
-	}
+
 	return app
 }
 
@@ -228,24 +225,15 @@ func appExport(
 	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
 	appOpts = viperAppOpts
 
-	var (
-		voidApp *void.VoidApp
-		err     error
-	)
+	var voidApp *void.VoidApp
 	if height != -1 {
-		voidApp, err = void.New(logger, db, traceStore, false, appOpts)
-		if err != nil {
-			return servertypes.ExportedApp{}, err
-		}
+		voidApp = void.New(logger, db, traceStore, false, appOpts)
 
 		if err := voidApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		voidApp, err = void.New(logger, db, traceStore, true, appOpts)
-		if err != nil {
-			return servertypes.ExportedApp{}, err
-		}
+		voidApp = void.New(logger, db, traceStore, true, appOpts)
 	}
 
 	return voidApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)

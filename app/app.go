@@ -41,14 +41,12 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
-	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
+	icahostkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/keeper"
+
+	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 
@@ -103,22 +101,12 @@ type VoidApp struct {
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	CapabilityKeeper    *capabilitykeeper.Keeper
-	IBCFeeKeeper        ibcfeekeeper.Keeper
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
 
-	// Scoped IBC
-	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
-	ScopedIBCTransferKeeper   capabilitykeeper.ScopedKeeper
-	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
-	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
-	ScopedKeepers             map[string]capabilitykeeper.ScopedKeeper
-
 	// CosmWasm
-	WasmKeeper       wasmkeeper.Keeper
-	ScopedWasmKeeper capabilitykeeper.ScopedKeeper
+	WasmKeeper wasmkeeper.Keeper
 
 	// Feemarket
 	FeeMarketKeeper feemarketkeeper.Keeper
@@ -158,9 +146,9 @@ func New(
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) (*VoidApp, error) {
+) *VoidApp {
 	var (
-		app        = &VoidApp{ScopedKeepers: make(map[string]capabilitykeeper.ScopedKeeper)}
+		app        = &VoidApp{}
 		appBuilder *runtime.AppBuilder
 
 		// merge the AppConfig and other configuration in one config
@@ -215,8 +203,6 @@ func New(
 				// The IBC Keeper cannot be passed because it has not been initiated yet.
 				// Passing the getter, the app IBC Keeper will always be accessible.
 				// This needs to be removed after IBC supports App Wiring.
-				app.GetIBCKeeper,
-				app.GetCapabilityScopedKeeper,
 			),
 		)
 	)
@@ -254,7 +240,7 @@ func New(
 
 	//register legacy modules
 	if err := app.RegisterLegacyModules(appOpts); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	// register streaming services
@@ -296,7 +282,7 @@ func New(
 		panic(err)
 	}
 
-	return app, app.WasmKeeper.InitializePinnedCodes(app.NewUncachedContext(true, tmproto.Header{}))
+	return app
 }
 
 // LegacyAmino returns VoidApp's amino codec.

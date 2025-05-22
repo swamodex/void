@@ -13,7 +13,7 @@ install: bd
 	@echo "--> installing void to $(GOBIN)"
 	@cp build/void $(GOBIN)/void
 
-.PHONY: all install
+.PHONY: bd install
 
 ###################
 ### Development ###

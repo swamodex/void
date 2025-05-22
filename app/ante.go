@@ -6,12 +6,13 @@ import (
 	corestoretypes "cosmossdk.io/core/store"
 	circuitante "cosmossdk.io/x/circuit/ante"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
-	"github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	ibcante "github.com/cosmos/ibc-go/v10/modules/core/ante"
+	"github.com/cosmos/ibc-go/v10/modules/core/keeper"
+
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 )
@@ -22,7 +23,7 @@ type AnteHandlerOptions struct {
 	ante.HandlerOptions
 
 	IBCKeeper             *keeper.Keeper
-	WasmConfig            *wasmTypes.NodeConfig
+	WasmConfig            *wasmtypes.NodeConfig
 	WasmKeeper            *wasmkeeper.Keeper
 	TXCounterStoreService corestoretypes.KVStoreService
 	CircuitKeeper         *circuitkeeper.Keeper
@@ -46,9 +47,9 @@ func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 	if options.HandlerOptions.SignModeHandler == nil {
 		return nil, errors.New("sign mode handler is required for ante builder")
 	}
-	if options.WasmConfig == nil {
-		return nil, errors.New("wasm config is required for ante builder")
-	}
+	// if options.WasmConfig == nil {
+	// 	return nil, errors.New("wasm config is required for ante builder")
+	// }
 	if options.TXCounterStoreService == nil {
 		return nil, errors.New("wasm store service is required for ante builder")
 	}
