@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/core/appmodule"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -227,20 +227,18 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 
 // RegisterLegacyCLI Since the some modules don't support dependency injection,
 // we need to manually register the modules on the client side.
-func RegisterLegacyCLI(cdc codec.Codec) map[string]appmodule.AppModule {
+func RegisterLegacyCLI(registry cdctypes.InterfaceRegistry) map[string]appmodule.AppModule {
 	modules := map[string]appmodule.AppModule{
-		ibcexported.ModuleName:      ibc.NewAppModule(&ibckeeper.Keeper{}),
-		ibctransfertypes.ModuleName: ibctransfer.NewAppModule(ibctransferkeeper.Keeper{}),
-		icatypes.ModuleName:         icamodule.NewAppModule(&icacontrollerkeeper.Keeper{}, &icahostkeeper.Keeper{}),
-		ibctm.ModuleName:            ibctm.NewAppModule(ibctm.NewLightClientModule(cdc, ibcclienttypes.StoreProvider{})),
-		solomachine.ModuleName:      solomachine.NewAppModule(solomachine.NewLightClientModule(cdc, ibcclienttypes.StoreProvider{})),
+		ibcexported.ModuleName:      ibc.AppModule{},
+		ibctransfertypes.ModuleName: ibctransfer.AppModule{},
+		icatypes.ModuleName:         icamodule.AppModule{},
+		ibctm.ModuleName:            ibctm.AppModule{},
+		solomachine.ModuleName:      solomachine.AppModule{},
 		wasmtypes.ModuleName:        wasm.AppModule{},
 	}
 
-	for _, m := range modules {
-		if mr, ok := m.(module.AppModuleBasic); ok {
-			mr.RegisterInterfaces(cdc.InterfaceRegistry())
-		}
+	for name, m := range modules {
+		module.CoreAppModuleBasicAdaptor(name, m).RegisterInterfaces(registry)
 	}
 
 	return modules

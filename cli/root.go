@@ -84,7 +84,7 @@ func NewRootCmd() *cobra.Command {
 
 	// Since the some modules don't support dependency injection, we need to
 	// manually register the modules on the client side.
-	legacyModules := void.RegisterLegacyCLI(clientCtx.Codec)
+	legacyModules := void.RegisterLegacyCLI(clientCtx.InterfaceRegistry)
 	for name, mod := range legacyModules {
 		moduleBasicManager[name] = module.CoreAppModuleBasicAdaptor(name, mod)
 		autoCliOpts.Modules[name] = mod
