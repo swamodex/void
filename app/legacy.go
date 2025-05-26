@@ -27,6 +27,7 @@ import (
 	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibctransferv2 "github.com/cosmos/ibc-go/v10/modules/apps/transfer/v2"
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
@@ -77,7 +78,7 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 	)
 
 	// Create IBC transfer keeper
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+	app.IBCTransferKeeper = ibctransferkeeper.NewKeeper(
 		app.appCodec,
 		runtime.NewKVStoreService(app.GetKey(ibctransfertypes.StoreKey)),
 		app.GetSubspace(ibctransfertypes.ModuleName),
@@ -129,7 +130,7 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 		distrkeeper.NewQuerier(app.DistrKeeper),
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper,
-		app.TransferKeeper,
+		app.IBCTransferKeeper,
 		app.MsgServiceRouter(),
 		app.GRPCQueryRouter(),
 		DefaultNodeHome,
@@ -143,46 +144,35 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 
 	// create IBC module from bottom to top of stack
 	var (
-		transferStack       porttypes.IBCModule = ibctransfer.NewIBCModule(app.TransferKeeper)
-		icaControllerStack  porttypes.IBCModule = icacontroller.NewIBCMiddleware(app.ICAControllerKeeper)
-		icaHostStack        porttypes.IBCModule = icahost.NewIBCModule(app.ICAHostKeeper)
-		wasmStackIBCHandler wasm.IBCHandler     = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
+		wasmStackIBCHandler wasm.IBCHandler
+		icaControllerStack  porttypes.IBCModule
+		noAuthzModule       porttypes.IBCModule
+		icaHostStack        porttypes.IBCModule
+		transferStack       porttypes.IBCModule
 	)
 
-	transferStack = ibccallbacks.NewIBCMiddleware(transferStack, app.IBCKeeper.ChannelKeeper, wasmStackIBCHandler, wasm.DefaultMaxIBCCallbackGas)
-	transferICS4Wrapper := transferStack.(porttypes.ICS4Wrapper)
+	// create wasm stack
+	wasmStackIBCHandler = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
 
-	// Since the callbacks middleware itself is an ics4wrapper, it needs to be passed to the ica controller keeper
-	app.TransferKeeper.WithICS4Wrapper(transferICS4Wrapper)
-
-	var noAuthzModule porttypes.IBCModule
+	// Create Interchain Accounts Stack
 	icaControllerStack = icacontroller.NewIBCMiddlewareWithAuth(noAuthzModule, app.ICAControllerKeeper)
 	icaControllerStack = icacontroller.NewIBCMiddlewareWithAuth(icaControllerStack, app.ICAControllerKeeper)
 	icaControllerStack = ibccallbacks.NewIBCMiddleware(icaControllerStack, app.IBCKeeper.ChannelKeeper, wasmStackIBCHandler, wasm.DefaultMaxIBCCallbackGas)
 	icaICS4Wrapper := icaControllerStack.(porttypes.ICS4Wrapper)
-
 	// Since the callbacks middleware itself is an ics4wrapper, it needs to be passed to the ica controller keeper
 	app.ICAControllerKeeper.WithICS4Wrapper(icaICS4Wrapper)
 
+	icaHostStack = icahost.NewIBCModule(app.ICAHostKeeper)
+
+	// Create Transfer Stack
+	transferStack = ibctransfer.NewIBCModule(app.IBCTransferKeeper)
+	transferStack = ibccallbacks.NewIBCMiddleware(transferStack, app.IBCKeeper.ChannelKeeper, wasmStackIBCHandler, wasm.DefaultMaxIBCCallbackGas)
+	transferICS4Wrapper := transferStack.(porttypes.ICS4Wrapper)
+	// Since the callbacks middleware itself is an ics4wrapper, it needs to be passed to the ica controller keeper
+	app.IBCTransferKeeper.WithICS4Wrapper(transferICS4Wrapper)
+
 	// set denom resolver to test variant.
 	app.FeeMarketKeeper.SetDenomResolver(&feemarkettypes.TestDenomResolver{})
-
-	if err := app.setAnteHandler(app.txConfig, wasmConfig, app.GetKey(wasmtypes.StoreKey)); err != nil {
-		return err
-	}
-
-	if err := app.setPostHandler(); err != nil {
-		return err
-	}
-
-	if manager := app.SnapshotManager(); manager != nil {
-		err := manager.RegisterExtensions(
-			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.WasmKeeper),
-		)
-		if err != nil {
-			return fmt.Errorf("failed to register snapshot extension: %s", err)
-		}
-	}
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter().
@@ -192,6 +182,10 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 		AddRoute(wasmtypes.ModuleName, wasmStackIBCHandler)
 
 	app.IBCKeeper.SetRouter(ibcRouter)
+
+	ibcRouterV2 = ibcRouterV2.
+		AddRoute(ibctransfertypes.PortID, ibctransferv2.NewIBCModule(app.IBCTransferKeeper))
+	app.IBCKeeper.SetRouterV2(ibcRouterV2)
 
 	clientKeeper := app.IBCKeeper.ClientKeeper
 	storeProvider := clientKeeper.GetStoreProvider()
@@ -204,12 +198,6 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 
 	// register legacy modules
 	if err := app.RegisterModules(
-		// register IBC modules
-		ibc.NewAppModule(app.IBCKeeper),
-		ibctransfer.NewAppModule(app.TransferKeeper),
-		icamodule.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
-		ibctm.NewAppModule(tmLightClientModule),
-		solomachine.NewAppModule(soloLightClientModule),
 		// register WASM modules
 		wasm.NewAppModule(
 			app.AppCodec(),
@@ -220,7 +208,32 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 			app.MsgServiceRouter(),
 			app.GetSubspace(wasmtypes.ModuleName),
 		),
+		// register IBC modules
+		ibc.NewAppModule(app.IBCKeeper),
+		ibctransfer.NewAppModule(app.IBCTransferKeeper),
+		icamodule.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
+		ibctm.NewAppModule(tmLightClientModule),
+		solomachine.NewAppModule(soloLightClientModule),
 	); err != nil {
+		return err
+	}
+
+	// ante
+	if err := app.setAnteHandler(app.txConfig, wasmConfig, app.GetKey(wasmtypes.StoreKey)); err != nil {
+		return err
+	}
+
+	if manager := app.SnapshotManager(); manager != nil {
+		err := manager.RegisterExtensions(
+			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.WasmKeeper),
+		)
+		if err != nil {
+			return fmt.Errorf("failed to register snapshot extension: %s", err)
+		}
+	}
+
+	// post
+	if err := app.setPostHandler(); err != nil {
 		return err
 	}
 
@@ -303,8 +316,9 @@ func (app *VoidApp) setPostHandler() error {
 
 	postHandler, err := NewPostHandler(postHandlerOptions)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
 	app.SetPostHandler(postHandler)
 	return nil
 }

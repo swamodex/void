@@ -108,7 +108,7 @@ type VoidApp struct {
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
-	TransferKeeper      ibctransferkeeper.Keeper
+	IBCTransferKeeper   ibctransferkeeper.Keeper
 
 	// CosmWasm
 	WasmKeeper wasmkeeper.Keeper
