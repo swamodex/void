@@ -137,7 +137,7 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 		wasmConfig,
 		wasmtypes.VMConfig{},
 		wasmkeeper.BuiltInCapabilities(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		govModuleAddr,
 		ibcRouterV2,
 		wasmOpts...,
 	)
@@ -181,6 +181,7 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(wasmtypes.ModuleName, wasmStackIBCHandler)
 
+	// Set the IBC Routers
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	ibcRouterV2 = ibcRouterV2.
