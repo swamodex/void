@@ -294,7 +294,7 @@ func (app *VoidApp) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtype
 			WasmKeeper:            &app.WasmKeeper,
 			TXCounterStoreService: runtime.NewKVStoreService(txCounterStoreKey),
 			CircuitKeeper:         &app.CircuitKeeper,
-			AccountKeeper:         app.AccountKeeper,
+			AccountKeeper:         &app.AccountKeeper,
 			BankKeeper:            app.BankKeeper,
 			FeeMarketKeeper:       &app.FeeMarketKeeper,
 		},

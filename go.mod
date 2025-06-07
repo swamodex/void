@@ -20,7 +20,7 @@ require (
 	github.com/CosmWasm/wasmd v0.55.0-ibc2.0
 	github.com/cometbft/cometbft v0.38.17
 	github.com/cosmos/cosmos-db v1.1.1
-	github.com/cosmos/cosmos-sdk v0.53.0-rc.2
+	github.com/cosmos/cosmos-sdk v0.53.0
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-go/v10 v10.1.1
 	github.com/skip-mev/feemarket v1.1.1

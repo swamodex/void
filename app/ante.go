@@ -8,6 +8,7 @@ import (
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	ibcante "github.com/cosmos/ibc-go/v10/modules/core/ante"
 	"github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
@@ -28,7 +29,7 @@ type AnteHandlerOptions struct {
 	TXCounterStoreService corestoretypes.KVStoreService
 	CircuitKeeper         *circuitkeeper.Keeper
 
-	AccountKeeper   feemarketante.AccountKeeper
+	AccountKeeper   *authkeeper.AccountKeeper
 	BankKeeper      feemarketante.BankKeeper
 	FeeMarketKeeper feemarketante.FeeMarketKeeper
 }
@@ -47,9 +48,9 @@ func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 	if options.HandlerOptions.SignModeHandler == nil {
 		return nil, errors.New("sign mode handler is required for ante builder")
 	}
-	// if options.WasmConfig == nil {
-	// 	return nil, errors.New("wasm config is required for ante builder")
-	// }
+	if options.WasmConfig == nil {
+		return nil, errors.New("wasm config is required for ante builder")
+	}
 	if options.TXCounterStoreService == nil {
 		return nil, errors.New("wasm store service is required for ante builder")
 	}
