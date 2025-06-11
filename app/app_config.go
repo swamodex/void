@@ -193,6 +193,7 @@ var (
 				// When ExportGenesis is not specified, the export genesis module order
 				// is equal to the init genesis order
 				ExportGenesis: []string{
+					consensustypes.ModuleName,
 					authtypes.ModuleName,
 					protocolpooltypes.ModuleName, // Must be exported before bank
 					banktypes.ModuleName,

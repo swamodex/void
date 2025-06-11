@@ -1,10 +1,10 @@
 module void
 
-go 1.24.0
+go 1.24.3
 
 require (
 	cosmossdk.io/api v0.9.2
-	cosmossdk.io/client/v2 v2.0.0-beta.8
+	cosmossdk.io/client/v2 v2.0.0-beta.9
 	cosmossdk.io/collections v1.2.1 // indirect
 	cosmossdk.io/core v0.11.3
 	cosmossdk.io/depinject v1.2.1
@@ -12,19 +12,19 @@ require (
 	cosmossdk.io/math v1.5.3
 	cosmossdk.io/store v1.1.2
 	cosmossdk.io/tools/confix v0.1.2
-	cosmossdk.io/x/circuit v0.2.0-rc.2
-	cosmossdk.io/x/evidence v0.2.0-rc.2
-	cosmossdk.io/x/feegrant v0.2.0-rc.2
+	cosmossdk.io/x/circuit v0.2.0
+	cosmossdk.io/x/evidence v0.2.0
+	cosmossdk.io/x/feegrant v0.2.0
 	cosmossdk.io/x/tx v0.14.0 // indirect
 	cosmossdk.io/x/upgrade v0.2.0
-	github.com/CosmWasm/wasmd v0.55.1-0.20250606080729-008e4f555bdc
+	github.com/CosmWasm/wasmd v0.55.0-ibc2.0
 	github.com/cometbft/cometbft v0.38.17
-	github.com/cosmos/cosmos-db v1.1.1
+	github.com/cosmos/cosmos-db v1.1.3
 	github.com/cosmos/cosmos-sdk v0.53.2
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-go/v10 v10.3.0
 	github.com/skip-mev/feemarket v1.1.1
-	github.com/spf13/cast v1.8.0 // indirect
+	github.com/spf13/cast v1.9.2 // indirect
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.1
@@ -231,6 +231,8 @@ require (
 )
 
 replace (
+	//
+	github.com/CosmWasm/wasmd => github.com/CosmWasm/wasmd v0.55.1-0.20250606080729-008e4f555bdc
 	// Fix upstream GHSA-h395-qcrw-5vmq and GHSA-3vp4-m3rf-835h vulnerabilities.
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// replace broken goleveldb
