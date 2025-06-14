@@ -59,7 +59,7 @@ import (
 
 const (
 	AppName       = "void"
-	AppVersion    = "1.0.0"
+	AppVersion    = "v1.0.0"
 	ChainCoinType = 118
 	// AccountAddressPrefix is the prefix for accounts addresses.
 	AccountAddressPrefix = "vo"
