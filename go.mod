@@ -232,7 +232,7 @@ require (
 
 replace (
 	//
-	github.com/CosmWasm/wasmd => github.com/CosmWasm/wasmd v0.55.1-0.20250606080729-008e4f555bdc
+	github.com/CosmWasm/wasmd => github.com/CosmWasm/wasmd v0.55.1-0.20250613193020-909117360550
 	// Fix upstream GHSA-h395-qcrw-5vmq and GHSA-3vp4-m3rf-835h vulnerabilities.
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// replace broken goleveldb

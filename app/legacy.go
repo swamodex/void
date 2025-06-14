@@ -120,7 +120,6 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 	}
 
 	wasmOpts := []wasmkeeper.Option{}
-	ibcRouterV2 := ibcapi.NewRouter()
 	app.WasmKeeper = wasmkeeper.NewKeeper(
 		app.appCodec,
 		runtime.NewKVStoreService(app.GetKey(wasmtypes.StoreKey)),
@@ -139,7 +138,6 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 		wasmtypes.VMConfig{},
 		wasmkeeper.BuiltInCapabilities(),
 		govModuleAddr,
-		ibcRouterV2,
 		wasmOpts...,
 	)
 
@@ -185,8 +183,10 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 	// Set the IBC Routers
 	app.IBCKeeper.SetRouter(ibcRouter)
 
+	ibcRouterV2 := ibcapi.NewRouter()
 	ibcRouterV2 = ibcRouterV2.
-		AddRoute(ibctransfertypes.PortID, ibctransferv2.NewIBCModule(app.IBCTransferKeeper))
+		AddRoute(ibctransfertypes.PortID, ibctransferv2.NewIBCModule(app.IBCTransferKeeper)).
+		AddPrefixRoute(wasmkeeper.PortIDPrefixV2, wasmkeeper.NewIBC2Handler(app.WasmKeeper))
 	app.IBCKeeper.SetRouterV2(ibcRouterV2)
 
 	clientKeeper := app.IBCKeeper.ClientKeeper

@@ -659,8 +659,8 @@ github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/CosmWasm/wasmd v0.55.1-0.20250606080729-008e4f555bdc h1:ynpLQr8+4NrxgwmyzoDnygaqw6YDt+KneuhsXpHqOOs=
-github.com/CosmWasm/wasmd v0.55.1-0.20250606080729-008e4f555bdc/go.mod h1:aFKh5jWgvRPLqMKkcJMN2x29DV5w4TEFU7kkB+mgYeU=
+github.com/CosmWasm/wasmd v0.55.1-0.20250613193020-909117360550 h1:HGtcxdu64rhf17ShxxGbJtRfh7O0bnphOIRib38L7EE=
+github.com/CosmWasm/wasmd v0.55.1-0.20250613193020-909117360550/go.mod h1:4E1Z6SJLuEICksY0GNY/ISYEjAVmrDg4f3zFUuaAR8g=
 github.com/CosmWasm/wasmvm/v3 v3.0.0-ibc2.1 h1:fsYUiMlHpykFCyCwNjLl72LiKdtZahAVvD9pFQVIkN0=
 github.com/CosmWasm/wasmvm/v3 v3.0.0-ibc2.1/go.mod h1:oknpb1bFERvvKcY7vHRp1F/Y/z66xVrsl7n9uWkOAlM=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
