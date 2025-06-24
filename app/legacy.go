@@ -151,7 +151,7 @@ func (app *VoidApp) RegisterLegacyModules(appOpts servertypes.AppOptions) error 
 	)
 
 	// create wasm stack
-	wasmStackIBCHandler = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
+	wasmStackIBCHandler = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCTransferKeeper, app.IBCKeeper.ChannelKeeper)
 
 	// Create Interchain Accounts Stack
 	icaControllerStack = icacontroller.NewIBCMiddlewareWithAuth(noAuthzModule, app.ICAControllerKeeper)
