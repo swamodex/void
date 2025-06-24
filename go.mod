@@ -47,7 +47,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
-	github.com/CosmWasm/wasmvm/v3 v3.0.0-ibc2.1 // indirect
+	github.com/CosmWasm/wasmvm/v3 v3.0.0 // indirect
 	github.com/DataDog/datadog-go v4.8.3+incompatible // indirect
 	github.com/DataDog/zstd v1.5.7 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.26.0 // indirect
@@ -232,7 +232,7 @@ require (
 
 replace (
 	//
-	github.com/CosmWasm/wasmd => github.com/CosmWasm/wasmd v0.55.1-0.20250613193020-909117360550
+	github.com/CosmWasm/wasmd => github.com/CosmWasm/wasmd v0.55.1-0.20250623144802-8c478205b209
 	// Fix upstream GHSA-h395-qcrw-5vmq and GHSA-3vp4-m3rf-835h vulnerabilities.
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// replace broken goleveldb
